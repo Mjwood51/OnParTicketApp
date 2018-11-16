@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnParTicketApp", "OnParTicketApp\OnParTicketApp.csproj", "{0EA4536B-D6C8-4653-A8AF-16A75BF8377C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0EA4536B-D6C8-4653-A8AF-16A75BF8377C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EA4536B-D6C8-4653-A8AF-16A75BF8377C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EA4536B-D6C8-4653-A8AF-16A75BF8377C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EA4536B-D6C8-4653-A8AF-16A75BF8377C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {73208644-9E07-453C-9B46-78AA3F96CAEF}
+	EndGlobalSection
+EndGlobal
