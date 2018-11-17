@@ -156,14 +156,17 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Admin\Controllers\PagesController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ShopController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Data\CategoryDTO.cs" />
     <Compile Include="Models\Data\PageDTO.cs" />
     <Compile Include="Models\Data\SidebarDTO.cs" />
     <Compile Include="Models\Data\TicketAppDB.cs" />
     <Compile Include="Models\ViewModels\Pages\PageVM.cs" />
     <Compile Include="Models\ViewModels\Pages\SidebarVM.cs" />
+    <Compile Include="Models\ViewModels\Shop\CategoryVM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +174,7 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\img\ajax-loader.gif" />
     <Content Include="favicon.ico" />
     <Content Include="fileman\css\images\animated-overlay.gif" />
     <Content Include="fileman\css\images\ui-bg_flat_0_aaaaaa_40x100.png" />
@@ -465,6 +469,7 @@
     <Content Include="Areas\Admin\Views\Pages\EditPage.cshtml" />
     <Content Include="Areas\Admin\Views\Pages\PageDetails.cshtml" />
     <Content Include="Areas\Admin\Views\Pages\EditSidebar.cshtml" />
+    <Content Include="Areas\Admin\Views\Shop\Categories.cshtml" />
     <None Include="codesnippets.snippet" />
     <Content Include="Scripts\ckeditor\adapters\jquery.js" />
     <Content Include="Scripts\ckeditor\CHANGES.html" />
