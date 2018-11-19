@@ -22,7 +22,7 @@
 }
 else
 {
-    <table class="table sorting" id="pages">
+    <table class="table sorting categories" id="pages">
         <tr class="home">
             <th>
                 @Html.DisplayNameFor(model => model.Name)
@@ -32,8 +32,9 @@ else
 
         @foreach (var item in Model)
         {
-            <tr>
+            <tr id="id_@item.Id">
                 <td>
+                    <div class="ajaxdivtd"></div>
                     @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
                 </td>
                 <td>
@@ -48,103 +49,160 @@ else
     <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
     <script>
 
-    $(function () { 
+        $(function () {
 
             /*
              *Add new Category
              */
 
-        var newCatA = $("a#newcata");
-        var newCatTextInput = $("#newcatname");
-        var ajaxText = $("span.ajax-text");
-        var table = $("table#pages tbody");
+            var newCatA = $("a#newcata");
+            var newCatTextInput = $("#newcatname");
+            var ajaxText = $("span.ajax-text");
+            var table = $("table#pages tbody");
 
-        newCatTextInput.keyup(function () {
-            if (e.KeyCode == 13) {
-                newCatA.click();
-            }
-        });
+            newCatTextInput.keyup(function () {
+                if (e.KeyCode == 13) {
+                    newCatA.click();
+                }
+            });
 
-        newCatA.click(function (e) {
-            e.preventDefault();
+            newCatA.click(function (e) {
+                e.preventDefault();
 
-            var catName = newCatTextInput.val();
+                var catName = newCatTextInput.val();
 
-            if (catName.length < 2) {
-                alert("Category name must be at least 2 characters long.");
-                return false;
-            }
-
-            ajaxText.show();
-
-            var url = "/admin/shop/AddNewCategory";
-
-            $.post(url, { catName: catName }, function (data) {
-
-                var response = data.trim();
-
-                if (response == "titletaken") {
-                    ajaxText.html("<span class='alert alert-danger'>That title is taken!</span>")
-                    setTimeout(function () {
-                        ajaxText.fadeOut("fast", function () {
-                            ajaxText.html("<img src=/Content/img/ajax-loader.gif>");
-                        });
-                    }, 2000);
+                if (catName.length < 2) {
+                    alert("Category name must be at least 2 characters long.");
                     return false;
-                } else {
-                    if (!$("table#pages").length) {
-                        location.reload();
-                    } else {
-                        ajaxText.html("<span class='alert alert-success'>The category has been added!</span>")
+                }
+
+                ajaxText.show();
+
+                var url = "/admin/shop/AddNewCategory";
+
+                $.post(url, { catName: catName }, function (data) {
+
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        ajaxText.html("<span class='alert alert-danger'>That title is taken!</span>")
                         setTimeout(function () {
                             ajaxText.fadeOut("fast", function () {
                                 ajaxText.html("<img src=/Content/img/ajax-loader.gif>");
                             });
                         }, 2000);
+                        return false;
+                    } else {
+                        if (!$("table#pages").length) {
+                            location.reload();
+                        } else {
+                            ajaxText.html("<span class='alert alert-success'>The category has been added!</span>")
+                            setTimeout(function () {
+                                ajaxText.fadeOut("fast", function () {
+                                    ajaxText.html("<img src=/Content/img/ajax-loader.gif>");
+                                });
+                            }, 2000);
 
-                        newCatTextInput.val("");
+                            newCatTextInput.val("");
 
-                        var toAppend = $("table#pages tbody tr:last").clone();
-                        toAppend.attr("id", "id_" + data);
-                        toAppend.find("#item_Name").val(catName);
-                        toAppend.find("a.delete").attr("href", "/admin/shop/DeleteCategory/", + data);
-                        table.append(toAppend);
-                        table.sortable("refresh");
+                            var toAppend = $("table#pages tbody tr:last").clone();
+                            toAppend.attr("id", "id_" + data);
+                            toAppend.find("#item_Name").val(catName);
+                            toAppend.find("a.delete").attr("href", "/admin/shop/DeleteCategory/", + data);
+                            table.append(toAppend);
+                            table.sortable("refresh");
+                        }
                     }
-                }
-            });
-        });
-
-            //////////////////////////////////////////////////////
-
-
-            /*
-             *Confirm page deletion
-             */
-
-            $("a.delete").click(function () {
-                if (!confirm("Confirm page deletion")) return false;
+                });
             });
 
             //////////////////////////////////////////////////////
 
             /*
-             *Confirm page deletion
+              *Reorder categories
              */
             $("table#pages tbody").sortable({
                 items: "tr:not(.home)",
                 placeholder: "ui-state-highlight",
                 update: function () {
                     var ids = $("table#pages tbody").sortable("serialize");
-                    var url = "/Admin/Pages/ReorderPages";
+                    var url = "/Admin/Shop/ReorderCategories";
 
                     $.post(url, ids, function (data) { });
                 }
 
             });
 
+
             //////////////////////////////////////////////////////
+
+
+            /*
+             *Confirm category deletion 
+             */
+
+
+            $("body").on("click", "a.delete", function () {
+                if (!confirm("Confirm page deletion")) return false;
+            });
+
+            //////////////////////////////////////////////////////
+
+
+            /*
+             *Rename category
+             */
+            var originalTextBoxValue;
+
+            $("table#pages input.text-box").dblclick(function () {
+                originalTextBoxValue = $(this).val();
+                $(this).attr("readonly", false);
+            });
+
+            $("table#pages input.text-box").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    $(this).blur();
+                }
+            });
+
+            $("table#pages input.text-box").blur(function () {
+                var $this = $(this);
+                var ajaxdiv = $this.parent().find(".ajaxdivtd");
+                var newCatName = $this.val();
+                var id = $this.parent().parent().attr("id").substring(3);
+                var url = "/admin/shop/RenameCategory";
+
+                if (newCatName.length < 2) {
+                    alert("Category name must be at least 2 characters long.");
+                    $this.attr("readonly", true);
+                    return false;
+                }
+
+                $.post(url, { newCatName: newCatName, id: id }, function (data) {
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        $this.val(originalTextBoxValue);
+                        ajaxdiv.html("<span class='alert alert-danger'>That title is taken!</span>").show();
+                    }
+                    else {
+                        ajaxdiv.html("<span class='alert alert-success'>That category name has been changed!</span>").show();
+                    }
+
+                    setTimeout(function () {
+                        ajaxdiv.fadeOut("fast", function () {
+                            ajaxdiv.html("");
+                        });
+                    }, 2000);
+
+                }).done(function () {
+                    $this.attr("readonly", true);
+                });
+
+
+            });
         });
+        //////////////////////////////////////////////////////
     </script>
 
 }
