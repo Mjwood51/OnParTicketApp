@@ -7,6 +7,12 @@ using System.Web;
 
 namespace OnParTicketApp.Models.Data
 {
+    public enum Verified
+    {
+        Not_Verified = 0,
+        Verified = 1
+    }
+
     [Table("tblProducts")]
     public class ProductDTO
     {
@@ -19,6 +25,9 @@ namespace OnParTicketApp.Models.Data
         public string CategoryName { get; set; }
         public int CategoryId { get; set; }
         public string ImageName { get; set; }
+        public string PdfName { get; set; }
+        public DateTime? ReservationDate { get; set; }
+        public Verified Verified { get; set; }
 
         [ForeignKey("CategoryId")]
         public virtual CategoryDTO Category { get; set; }

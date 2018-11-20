@@ -12,5 +12,6 @@ namespace OnParTicketApp.Models.Data
         public DbSet<SidebarDTO> Sidebar { get; set; }
         public DbSet<CategoryDTO> Categories { get; set; }
         public DbSet<ProductDTO> Products { get; set; }
+        public DbSet<PdfDTO> Pdfs { get; set; }
     }
 }

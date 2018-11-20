@@ -7,6 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
+using PagedList;
 
 namespace OnParTicketApp.Areas.Admin.Controllers
 {
@@ -160,7 +161,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
         // POST:  Admin/Shop/AddProduct
         [HttpPost]
-        public ActionResult Addproduct(ProductVM model, HttpPostedFileBase file)
+        public ActionResult AddProduct(ProductVM model, HttpPostedFileBase file, HttpPostedFileBase uploadPDF)
         {
             //Check model state
             if(!ModelState.IsValid)
@@ -185,31 +186,77 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             }
             // Declare product id
             int id;
-
+            string pdfName = System.IO.Path.GetFileName(uploadPDF.FileName);
             //Init and save product DTO
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO product = new ProductDTO();
 
-                product.Name = model.Name;
-                product.Slug = model.Name.Replace(" ", "-").ToLower();
-                product.Description = model.Description;
-                product.Price = model.Price;
-                product.CategoryId = model.CategoryId;
+                if (uploadPDF != null && uploadPDF.ContentLength > 0)
+                {
+                    var invoice = new PdfDTO
+                    {
+                        Name = pdfName,
+                        pdfType = PDFType.Invoice,
+                        ContentType = uploadPDF.ContentType,
+                        ProductId = model.Id
+                    };
+                    string pdfext = Path.GetExtension(invoice.Name);
 
-                CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
-                product.CategoryName = catDTO.Name;
+                    if (!pdfext.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                        ModelState.AddModelError("", "That pdf was not uploaded - wrong Pdf extension.");
+                        return View(model);
+                    }
+                    using (var reader = new System.IO.BinaryReader(uploadPDF.InputStream))
+                    {
+                        invoice.Data = reader.ReadBytes(uploadPDF.ContentLength);
+                    }
 
-                db.Products.Add(product);
-                db.SaveChanges();
+                    
+
+                    model.Pdfs = new List<PdfDTO> { invoice };
+                    PdfDTO pdf = new PdfDTO();
+                    pdf = invoice;
+                    db.Pdfs.Add(pdf);
+
+                    product.Name = model.Name;
+                    product.Slug = model.Name.Replace(" ", "-").ToLower();
+                    product.Description = model.Description;
+                    product.Price = model.Price;
+                    product.ReservationDate = model.ReservationDate;
+                    product.Verified = 0;
+                    product.CategoryId = model.CategoryId;
+                    CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
+                    product.CategoryName = catDTO.Name;
+
+                    db.Products.Add(product);
+                    db.SaveChanges();
+                }
+                else
+                {
+                    product.Name = model.Name;
+                    product.Slug = model.Name.Replace(" ", "-").ToLower();
+                    product.Description = model.Description;
+                    product.Price = model.Price;
+                    product.CategoryId = model.CategoryId;
+                    CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
+                    product.CategoryName = catDTO.Name;
+
+                    db.Products.Add(product);
+                    db.SaveChanges();
+                }
 
                 //Get the id
                 id = product.Id;
             }
 
+            
+
 
             //Set TempData message
-            TempData["SM"] = "You have added a product!";
+            TempData["SM"] = "You have added a listing!";
 
             #region Upload Image
 
@@ -237,58 +284,96 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
             if (!Directory.Exists(pathString5))
                 Directory.CreateDirectory(pathString5);
-
-            //Check if a file was uploaded
-            if(file != null && file.ContentLength > 0)
-            {
-                //Get file extension
-                string ext = file.ContentType.ToLower();
-
-                //Verify extension
-                if (ext != "image/jpg" &&
-                    ext != "image/jpeg" && 
-                    ext != "image/pjpeg" && 
-                    ext != "image/gif" && 
-                    ext != "image/png" && 
-                    ext != "image/x-png")
+           
+                //Check if a file was uploaded
+                if (file != null && file.ContentLength > 0)
                 {
-                    using (TicketAppDB db = new TicketAppDB())
-                    {          
+                    //Get file extension
+                    string ext = file.ContentType.ToLower();
+
+                    //Verify extension
+                    if (ext != "image/jpg" &&
+                        ext != "image/jpeg" &&
+                        ext != "image/pjpeg" &&
+                        ext != "image/gif" &&
+                        ext != "image/png" &&
+                        ext != "image/x-png")
+                    {
+                        using (TicketAppDB db = new TicketAppDB())
+                        {
                             model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
                             ModelState.AddModelError("", "That image was not uploaded - wrong image extension.");
                             return View(model);
+                        }
                     }
+
+
+
+                    //Init image name
+                    string imageName = file.FileName;
+
+
+                    //Save image and pdf names to DTO
+                    using (TicketAppDB db = new TicketAppDB())
+                    {
+                        ProductDTO dto = db.Products.Find(id);
+                        dto.PdfName = pdfName;
+                        dto.ImageName = imageName;
+                        db.SaveChanges();
+                    }
+
+                    //Set original and thumb image paths
+                    var path = string.Format("{0}\\{1}", pathString2, imageName);
+                    var path2 = string.Format("{0}\\{1}", pathString3, imageName);
+
+                    //Save original
+                    file.SaveAs(path);
+
+                    //Create and save thumb
+                    WebImage img = new WebImage(file.InputStream);
+                    img.Resize(200, 200);
+                    img.Save(path2);
+
                 }
-                //Init image name
-                string imageName = file.FileName;
-
-                //Save image name to DTO
-                using (TicketAppDB db = new TicketAppDB())
-                {
-                    ProductDTO dto = db.Products.Find(id);
-                    dto.ImageName = imageName;
-
-                    db.SaveChanges();
-                }
-
-                //Set original and thumb image paths
-                var path = string.Format("{0}\\{1}", pathString2, imageName);
-                var path2 = string.Format("{0}\\{1}", pathString3, imageName);
-
-                //Save original
-                file.SaveAs(path);
-
-                //Create and save thumb
-                WebImage img = new WebImage(file.InputStream);
-                img.Resize(200, 200);
-                img.Save(path2);
-
-            }
 
             #endregion
 
             //Redirect
             return RedirectToAction("AddProduct");
+        }
+
+        // GET:  Admin/Shop/Products
+        public ActionResult Products(int? page, int? catId)
+        {
+            //Declare a list of ProductVM
+            List<ProductVM> listOfProductVM;
+
+            //Set page number
+            var pageNumber = page ?? 1;
+
+            using (TicketAppDB db = new TicketAppDB())
+            {
+                //Init the list
+                listOfProductVM = db.Products.ToArray()
+                                  .Where(x => catId == null || catId == 0 || x.CategoryId == catId)
+                                  .Select(x => new ProductVM(x))
+                                  .ToList();
+
+                //Populate categories select list
+                ViewBag.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+
+                //Set selected category
+                ViewBag.SelectedCat = catId.ToString();
+
+            }
+
+
+            //Set pagination
+            var onePageOfProducts = listOfProductVM.ToPagedList(pageNumber, 3);
+            ViewBag.OnePageOfProducts = onePageOfProducts;
+
+            //Return view with list
+            return View(listOfProductVM);
         }
     }
 
