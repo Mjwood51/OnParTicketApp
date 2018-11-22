@@ -8,11 +8,24 @@ using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 using PagedList;
+using System.Data.SqlClient;
+using System.Configuration;
+using Dapper;
+using System.Data;
 
 namespace OnParTicketApp.Areas.Admin.Controllers
 {
     public class ShopController : Controller
     {
+        private SqlConnection con;
+        private string constr;
+
+        private void DbConnection()
+        {
+            constr = ConfigurationManager.ConnectionStrings["TicketAppDB"].ToString();
+            con = new SqlConnection(constr);
+        }
+
         // GET: Admin/Shop/Categories
         [HttpGet]
         public ActionResult Categories()
@@ -161,7 +174,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
         // POST:  Admin/Shop/AddProduct
         [HttpPost]
-        public ActionResult AddProduct(ProductVM model, HttpPostedFileBase file, HttpPostedFileBase uploadPDF)
+        public ActionResult AddProduct(ProductVM model, HttpPostedFileBase uploadPDF, HttpPostedFileBase uploadPhoto)
         {
             //Check model state
             if(!ModelState.IsValid)
@@ -192,12 +205,12 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             {
                 ProductDTO product = new ProductDTO();
 
-                if (uploadPDF != null && uploadPDF.ContentLength > 0)
+                if (uploadPDF != null && uploadPhoto != null && uploadPDF.ContentLength > 0 && uploadPhoto.ContentLength > 0)
                 {
                     var invoice = new PdfDTO
                     {
                         Name = pdfName,
-                        pdfType = PDFType.Invoice,
+                        PdfType = PDFType.Invoice,
                         ContentType = uploadPDF.ContentType,
                         ProductId = model.Id
                     };
@@ -214,12 +227,37 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                         invoice.Data = reader.ReadBytes(uploadPDF.ContentLength);
                     }
 
-                    
 
+
+                    var photo = new PhotoDTO
+                    {
+                        Name = System.IO.Path.GetFileName(uploadPhoto.FileName),
+                        photoType = photoType.Picture,
+                        ContentType = uploadPhoto.ContentType,
+                        ProductId = model.Id
+                    };
+
+                    string photoext = Path.GetExtension(photo.Name);
+                    var strings = new List<string> { ".png", ".jpeg", ".gif", ".jpg" };
+                    bool contains = strings.Contains(photoext, StringComparer.OrdinalIgnoreCase);
+                    if (!contains)
+                    {
+                        model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+                        ModelState.AddModelError("", "That photo was not uploaded - wrong image extension.");
+                        return View(model);
+                    }
+                    using (var reader2 = new System.IO.BinaryReader(uploadPhoto.InputStream))
+                    {
+                        photo.Data = reader2.ReadBytes(uploadPhoto.ContentLength);
+                    }
+
+
+
+                    model.Photos = new List<PhotoDTO> { photo };
                     model.Pdfs = new List<PdfDTO> { invoice };
-                    PdfDTO pdf = new PdfDTO();
-                    pdf = invoice;
-                    db.Pdfs.Add(pdf);
+
+                    db.Pdfs.Add(invoice);
+                    db.Photos.Add(photo);
 
                     product.Name = model.Name;
                     product.Slug = model.Name.Replace(" ", "-").ToLower();
@@ -286,10 +324,10 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 Directory.CreateDirectory(pathString5);
            
                 //Check if a file was uploaded
-                if (file != null && file.ContentLength > 0)
+                if (uploadPhoto != null && uploadPhoto.ContentLength > 0)
                 {
                     //Get file extension
-                    string ext = file.ContentType.ToLower();
+                    string ext = uploadPhoto.ContentType.ToLower();
 
                     //Verify extension
                     if (ext != "image/jpg" &&
@@ -310,7 +348,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
 
                     //Init image name
-                    string imageName = file.FileName;
+                    string imageName = uploadPhoto.FileName;
 
 
                     //Save image and pdf names to DTO
@@ -327,10 +365,10 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                     var path2 = string.Format("{0}\\{1}", pathString3, imageName);
 
                     //Save original
-                    file.SaveAs(path);
+                    uploadPhoto.SaveAs(path);
 
                     //Create and save thumb
-                    WebImage img = new WebImage(file.InputStream);
+                    WebImage img = new WebImage(uploadPhoto.InputStream);
                     img.Resize(200, 200);
                     img.Save(path2);
 
@@ -375,7 +413,97 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             //Return view with list
             return View(listOfProductVM);
         }
+
+        [HttpGet]
+        public FileResult DownloadPdf(int id)
+        {
+            List<PdfDTO> objPdfs = GetPDFList();
+            var PDFById = (from PC in objPdfs
+                           where PC.ProductId.Equals(id)
+                           select new { PC.Name, PC.Data }).ToList().FirstOrDefault();
+            return File(PDFById.Data, "application/pdf", PDFById.Name);
+
+        }
+
+        [HttpGet]
+        public FileResult DownloadPhoto(int id)
+        {
+            List<PhotoDTO> objPhoto = GetPhotoList();
+            var PhotoById = (from PH in objPhoto
+                             where PH.ProductId.Equals(id)
+                             select new { PH.Name, PH.Data }).ToList().FirstOrDefault();
+            return File(PhotoById.Data, "image/png", PhotoById.Name);
+
+        }
+
+        [HttpGet]
+        public PartialViewResult PDFDetails()
+        {
+            List<PdfDTO> pdfList = GetPDFList();
+            return PartialView("PDFDetails", pdfList);
+        }
+
+        [HttpGet]
+        public PartialViewResult PhotoDetails()
+        {
+            List<PhotoDTO> pdfList = GetPhotoList();
+            return PartialView("PhotoDetails", pdfList);
+        }
+
+        [HttpGet]
+        public ActionResult GetImage(int id)
+        {
+            List<PhotoDTO> obPhoto = GetPhotoList();
+            var photo = (from IM in obPhoto
+                         where IM.ProductId.Equals(id)
+                         select IM.Data).FirstOrDefault();
+
+
+            return File(photo, "image/jpg");
+        }
+
+        private List<PhotoDTO> GetPhotoList()
+        {
+            List<PhotoDTO> photoList = new List<PhotoDTO>();
+            DbConnection();
+            con.Open();
+            photoList = SqlMapper.Query<PhotoDTO>(con, "GetPhotoDetails", commandType: CommandType.StoredProcedure).ToList();
+            con.Close();
+            return photoList;
+        }
+
+        private List<PdfDTO> GetPDFList()
+        {
+            List<PdfDTO> pdfList = new List<PdfDTO>();
+            DbConnection();
+            con.Open();
+            pdfList = SqlMapper.Query<PdfDTO>(con, "GetPDFDetails", commandType: CommandType.StoredProcedure).ToList();
+            con.Close();
+            return pdfList;
+        }
+
+        private void SavePDFDetails(PdfDTO objPdf)
+        {
+            DynamicParameters pdfParam = new DynamicParameters();
+            pdfParam.Add("@Name", objPdf.Name);
+            pdfParam.Add("@Data", objPdf.Data);
+            DbConnection();
+            con.Open();
+            con.Execute("AddPDFDetails", pdfParam, commandType: System.Data.CommandType.StoredProcedure);
+            con.Close();
+        }
+
+        private void SavePhotoDetails(PhotoDTO objPhoto)
+        {
+            DynamicParameters photoParam = new DynamicParameters();
+            photoParam.Add("@Name", objPhoto.Name);
+            photoParam.Add("@Data", objPhoto.Data);
+            DbConnection();
+            con.Open();
+            con.Execute("AddPhotoDetails", photoParam, commandType: System.Data.CommandType.StoredProcedure);
+            con.Close();
+        }
     }
 
-    
+        
 }

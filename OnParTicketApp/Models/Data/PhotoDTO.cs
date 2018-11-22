@@ -7,15 +7,15 @@ using System.Web;
 
 namespace OnParTicketApp.Models.Data
 {
-    [Table("tblPdf")]
-    public class PdfDTO
+    [Table("tblPhoto")]
+    public class PhotoDTO
     {
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
         public string ContentType { get; set; }
         public byte[] Data { get; set; }
-        public PDFType PdfType { get; set; }
+        public photoType photoType { get; set; }
         public int ProductId { get; set; }
 
         [ForeignKey("ProductId")]

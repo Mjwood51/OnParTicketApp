@@ -71,5 +71,6 @@ namespace OnParTicketApp.Models.ViewModels.Shop
         public IEnumerable<SelectListItem> Categories { get; set; }
         public IEnumerable<string> GalleryImages { get; set; }
         public IEnumerable<PdfDTO> Pdfs { get; set; }
+        public IEnumerable<PhotoDTO> Photos { get; set; }
     }
 }

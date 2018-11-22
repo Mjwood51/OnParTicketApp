@@ -63,7 +63,7 @@
         <div class="form-group">
             <label class="control-label col-md-2" for="HasSideBar">Listing Image</label>
             <div class="col-md-10">
-                <input type="file" name="file" id="imageUpload" />
+                <input type="file" name="uploadPhoto" id="Picture" />
                 <img id="imgpreview" src="#" />
             </div>
         </div>
@@ -111,7 +111,7 @@
                 }
             }
 
-            $("#imageUpload").change(function () {
+            $("#Picture").change(function () {
                 readURL(this);
             });
             //////////////////////////////////////////////////////
