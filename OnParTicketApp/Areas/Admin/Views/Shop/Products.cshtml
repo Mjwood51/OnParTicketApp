@@ -27,6 +27,14 @@
 <p>
     @Html.ActionLink("Add New Listing", "AddProduct")
 </p>
+
+@if (TempData["SM"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SM"]
+    </div>
+}
+
 <table class="table">
     <tr>
         <th>
@@ -64,7 +72,7 @@
             </td>
             <td>
                 <a href="/admin/shop/EditProduct/@product.Id">
-                    <img src='@Url.Action("GetImage", "Shop", new { id = product.Id})' width="200" height="200" />  
+                    <img src='@Url.Action("GetImage", "Shop", new { id = product.Id})' width="200" height="200" />
                 </a>
             </td>
             <td>
@@ -75,7 +83,7 @@
             </td>
             <td>
                 @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }) |
-                @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id })
+                @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "delete" })
             </td>
         </tr>
     }
@@ -105,7 +113,7 @@
 
             //////////////////////////////////////////////////////
 
-          
+
         });
     </script>
 

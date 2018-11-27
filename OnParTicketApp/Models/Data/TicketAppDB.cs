@@ -14,5 +14,8 @@ namespace OnParTicketApp.Models.Data
         public DbSet<ProductDTO> Products { get; set; }
         public DbSet<PdfDTO> Pdfs { get; set; }
         public DbSet<PhotoDTO> Photos { get; set; }
+        public DbSet<UserDTO> Users { get; set; }
+        public DbSet<RoleDTO> Roles { get; set; }
+        public DbSet<UserRoleDTO> UserRoles { get; set; }
     }
 }
