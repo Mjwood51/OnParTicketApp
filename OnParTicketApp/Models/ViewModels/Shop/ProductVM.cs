@@ -9,6 +9,7 @@ using System.Web.Mvc;
 
 namespace OnParTicketApp.Models.ViewModels.Shop
 {
+
     public class MyDate : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
@@ -45,7 +46,8 @@ namespace OnParTicketApp.Models.ViewModels.Shop
             PdfName = row.PdfName;
             ReservationDate = row.ReservationDate;
             Verified = row.Verified;
-        }
+            UserId = row.UserId;
+    }
 
 
         public int Id { get; set; }
@@ -67,6 +69,7 @@ namespace OnParTicketApp.Models.ViewModels.Shop
         [Required]
         public DateTime? ReservationDate { get; set; }
         public Verified Verified { get; set; }
+        public int UserId { get; set; }
 
         public IEnumerable<SelectListItem> Categories { get; set; }
         public IEnumerable<string> GalleryImages { get; set; }

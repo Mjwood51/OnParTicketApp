@@ -21,27 +21,35 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     @Html.Action("PagesMenuPartial", "Pages");
+                   
                     @if (Request.IsAuthenticated)
                     {
                         <li><a href="/account/logout">Logout</a></li>
+
                     }
                     else
                     {
                         if (ViewBag.Title == "Login")
                         {
                             <li class="active"><a href="/account/login">Login</a></li>
+
+
                         }
                         else
                         {
                             <li><a href="/account/login">Login</a></li>
+                            <li><a href="/account/create-account">Create Acount</a></li>
+
                         }
                     }
 
                     @if (Request.IsAuthenticated && User.IsInRole("User"))
                     {
+                        <li class="active"><a href="/Shop/AddProduct">Create Listing</a></li>
                         if (ViewBag.Title == "User Profile" || ViewBag.Title == "Orders")
                         {
                             <li class="active">@Html.Action("UserNavPartial", "Account", new { area = "" })</li>
+
                         }
                         else
                         {
@@ -72,37 +80,37 @@
     </div>
     <div class="container body-content">
         <div class="row">
-            <div class="col-xs-12 col-md-2">
-                @Html.Action("CategoryMenuPartial", "Shop")
-            </div>
             <div class="ajaxbg"><span><img src="~/Content/img/ajax-loader.gif" /></span></div>
 
-            @*@if (ViewBag.Title != "Create Account" &&
+            @if (ViewBag.Title != "Create Account" &&
             ViewBag.Title != "Login" &&
             ViewBag.Title != "User Profile" &&
-            ViewBag.Title != "Orders"
+            ViewBag.Title != "Orders" && 
+            User.IsInRole("User")
             )
-        {
+            {
+                <div class="col-xs-12 col-md-2">
+                    @Html.Action("CategoryMenuPartial", "Shop")
+                </div>
+            }
 
-        }
+            @if (ViewBag.Title == "User Profile")
+            {
+                <div class="col-xs-12 col-md-2">
+                    <ul>
+                        <li><a href="/account/orders">My Orders</a></li>
+                    </ul>
+                </div>
+            }
 
-        @if (ViewBag.Title == "User Profile")
-        {
-            <div class="col-xs-12 col-md-2">
-                <ul>
-                    <li><a href="/account/orders">My Orders</a></li>
-                </ul>
-            </div>
-        }
-
-        @if (ViewBag.Title == "Orders")
-        {
-            <div class="col-xs-12 col-md-2">
-                <ul>
-                    <li><a href="/account/user-profile">My Profile</a></li>
-                </ul>
-            </div>
-        }*@
+            @if (ViewBag.Title == "Orders")
+            {
+                <div class="col-xs-12 col-md-2">
+                    <ul>
+                        <li><a href="/account/user-profile">My Profile</a></li>
+                    </ul>
+                </div>
+            }
 
             @if (ViewBag.Sidebar == "Yes")
             {

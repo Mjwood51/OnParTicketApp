@@ -75,7 +75,7 @@
         </td>
         <td>
             <a href="/admin/shop/EditProduct/@product.Id">
-                <img src='@Url.Action("GetImage", "Shop", new { id = product.Id })' width="200" height="200" />
+                <img src='@Url.Action("GetImage", "Shop", new { id = product.Id})' width="200" height="200" />
             </a>
         </td>
         <td>
@@ -85,15 +85,9 @@
             @product.Verified
         </td>
         <td>
-            @if (User.IsInRole("Admin"))
-            {
-            @Html.ActionLink("Download PDF", "DownloadPdf", new { id = product.Id })
-            }
+            @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }) |
+            @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "delete" })
         </td>
-        <td>
-                @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }) |
-                @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "delete" })
-            </td>
     </tr>
     }
 </table>

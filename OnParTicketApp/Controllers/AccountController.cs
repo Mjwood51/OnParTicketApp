@@ -1,5 +1,6 @@
 ﻿using OnParTicketApp.Models.Data;
 using OnParTicketApp.Models.ViewModels.Account;
+using OnParTicketApp.Models.ViewModels.Shop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -263,7 +264,7 @@ namespace OnParTicketApp.Controllers
             // Init list of OrdersForUserVM
             List<OrdersForUserVM> ordersForUser = new List<OrdersForUserVM>();
 
-            using (Db db = new Db())
+            using (TicketAppDB db = new TicketAppDB())
             {
                 // Get user id
                 UserDTO user = db.Users.Where(x => x.Username == User.Identity.Name).FirstOrDefault();

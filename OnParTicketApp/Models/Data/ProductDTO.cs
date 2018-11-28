@@ -28,8 +28,12 @@ namespace OnParTicketApp.Models.Data
         public string PdfName { get; set; }
         public DateTime? ReservationDate { get; set; }
         public Verified Verified { get; set; }
+        public int UserId { get; set; }
 
         [ForeignKey("CategoryId")]
         public virtual CategoryDTO Category { get; set; }
+
+        [ForeignKey("UserId")]
+        public virtual UserDTO User { get; set; }
     }
 }

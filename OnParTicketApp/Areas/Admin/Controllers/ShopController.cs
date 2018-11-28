@@ -12,12 +12,15 @@ using System.Data.SqlClient;
 using System.Configuration;
 using Dapper;
 using System.Data;
+using OnParTicketApp.Areas.Admin.Models.ViewModels.Shop;
+using Microsoft.AspNet.Identity;
 
 namespace OnParTicketApp.Areas.Admin.Controllers
 {
+
     public class ShopController : Controller
     {
-
+        
         private SqlConnection con;
         private string constr;
 
@@ -156,25 +159,6 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             return "ok";
         }
 
-        // GET:  Admin/Shop/AddProduct
-        [HttpGet]
-        public ActionResult AddProduct()
-        {
-            //Init model
-            ProductVM model = new ProductVM();
-
-            //Add select list of categories to model
-            using (TicketAppDB db = new TicketAppDB())
-            {
-                model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
-            }
-
-                //Return view with model
-                return View(model);
-        }
-
-        
-
         // GET:  Admin/Shop/Products
         public ActionResult Products(int? page, int? catId)
         {
@@ -297,135 +281,6 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             con.Open();
             con.Execute("AddPhotoDetails", photoParam, commandType: System.Data.CommandType.StoredProcedure);
             con.Close();
-        }
-
-        // POST:  Admin/Shop/AddProduct
-        [HttpPost]
-        public ActionResult AddProduct(ProductVM model, HttpPostedFileBase uploadPDF, HttpPostedFileBase uploadPhoto)
-        {
-            HttpPostedFileBase photobase = uploadPhoto;
-            HttpPostedFileBase pdfbase = uploadPDF;
-            //Check model state
-            if (!ModelState.IsValid)
-            {
-                using (TicketAppDB db = new TicketAppDB())
-                {
-                    model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
-                    return View(model);
-                }
-
-            }
-            //Make sure product name is unique
-            using (TicketAppDB db = new TicketAppDB())
-            {
-                if (db.Products.Any(x => x.Name == model.Name))
-                {
-                    model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
-                    ModelState.AddModelError("", "That product name is taken!");
-                    return View(model);
-                }
-
-            }
-
-            // Declare product id
-            int id;
-
-            //Init image name
-
-            string pdfsName = uploadPDF.FileName;
-            string imagesName = uploadPhoto.FileName;
-
-            using (TicketAppDB db = new TicketAppDB())
-            {
-                //Init and save product DTO
-                ProductDTO product = new ProductDTO();
-
-                product.Name = model.Name;
-                product.Slug = model.Name.Replace(" ", "-").ToLower();
-                product.Description = model.Description;
-                product.Price = model.Price;
-                product.ReservationDate = model.ReservationDate;
-                product.Verified = 0;
-                product.PdfName = pdfsName;
-                product.ImageName = imagesName;
-                product.CategoryId = model.CategoryId;
-                CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
-                product.CategoryName = catDTO.Name;
-
-                db.Products.Add(product);
-                db.SaveChanges();
-
-                //Get the id
-                id = product.Id;
-            }
-
-            using (TicketAppDB db = new TicketAppDB())
-            {
-                if (uploadPhoto != null && uploadPhoto.ContentLength > 0)
-                {
-                    var photo = new PhotoDTO
-                    {
-                        Name = System.IO.Path.GetFileName(uploadPhoto.FileName),
-                        photoType = photoType.Picture,
-                        ContentType = uploadPhoto.ContentType,
-                        ProductId = id
-                    };
-
-                    string photoext = Path.GetExtension(photo.Name);
-                    var strings = new List<string> { ".png", ".jpeg", ".gif", ".jpg" };
-                    bool contains = strings.Contains(photoext, StringComparer.OrdinalIgnoreCase);
-                    if (!contains)
-                    {
-                        model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
-                        ModelState.AddModelError("", "That photo was not uploaded - wrong image extension.");
-                        return View(model);
-                    }
-                    using (var reader2 = new System.IO.BinaryReader(uploadPhoto.InputStream))
-                    {
-                        photo.Data = reader2.ReadBytes(uploadPhoto.ContentLength);
-                    }
-
-                    model.Photos = new List<PhotoDTO> { photo };
-                    db.Photos.Add(photo);
-                    db.SaveChanges();
-                }
-            }
-
-            using (TicketAppDB db = new TicketAppDB())
-            {
-                if (uploadPDF != null && uploadPDF.ContentLength > 0)
-                {
-                    var invoice = new PdfDTO
-                    {
-                        Name = System.IO.Path.GetFileName(uploadPDF.FileName),
-                        PdfType = PDFType.Invoice,
-                        ContentType = uploadPDF.ContentType,
-                        ProductId = id
-                    };
-                    string pdfext = Path.GetExtension(invoice.Name);
-
-                    if (!pdfext.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                    {
-                        model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
-                        ModelState.AddModelError("", "That pdf was not uploaded - wrong Pdf extension.");
-                        return View(model);
-                    }
-                    using (var reader = new System.IO.BinaryReader(uploadPDF.InputStream))
-                    {
-                        invoice.Data = reader.ReadBytes(uploadPDF.ContentLength);
-                    }
-
-                    model.Pdfs = new List<PdfDTO> { invoice };
-                    db.Pdfs.Add(invoice);
-                    db.SaveChanges();
-                }
-            }
-
-            //Set TempData message
-            TempData["SM"] = "You have added a listing!";
-
-            //Redirect
-            return RedirectToAction("AddProduct");
         }
 
         // GET: Admin/Shop/EditProduct/id
@@ -568,8 +423,28 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                     db.SaveChanges();
                 }
             }
-            string pdfsName = uploadPDF.FileName;
-            string imagesName = uploadPhoto.FileName;
+
+
+            PdfDTO pdfs = new PdfDTO();
+            PhotoDTO images = new PhotoDTO();
+            string pdfsName;
+            string imagesName;
+            using (TicketAppDB db = new TicketAppDB())
+            {
+                pdfs = db.Pdfs.Where(x=>x.ProductId == id).FirstOrDefault();
+                pdfsName = pdfs.Name;
+                images = db.Photos.Where(x => x.ProductId == id).FirstOrDefault();
+                imagesName = pdfs.Name;
+            }
+            if (uploadPDF != null)
+            {
+                    pdfsName = uploadPDF.FileName;
+            }
+
+            if (uploadPhoto != null)
+            {
+                imagesName = uploadPhoto.FileName;
+            }
             // Update product
             using (TicketAppDB db = new TicketAppDB())
             {
@@ -579,14 +454,14 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 dto.Slug = model.Name.Replace(" ", "-").ToLower();
                 dto.Description = model.Description;
                 dto.ReservationDate = model.ReservationDate;
-                dto.Verified = 0;
+                dto.Verified = model.Verified;
                 dto.PdfName = pdfsName;
                 dto.ImageName = imagesName;
                 dto.Price = model.Price;
                 dto.CategoryId = model.CategoryId;
 
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
-                dto.CategoryName = catDTO.Name;
+                //dto.CategoryName = catDTO.Name;
 
                 db.SaveChanges();
             }
@@ -614,6 +489,68 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             TempData["SM"] = "You have deleted a listing!";
             // Redirect
             return RedirectToAction("Products");
+        }
+
+        // GET: Admin/Shop/Orders
+        public ActionResult Orders()
+        {
+            // Init list of OrdersForAdminVM
+            List<OrdersForAdminVM> ordersForAdmin = new List<OrdersForAdminVM>();
+
+            using (TicketAppDB db = new TicketAppDB())
+            {
+                // Init list of OrderVM
+                List<OrderVM> orders = db.Orders.ToArray().Select(x => new OrderVM(x)).ToList();
+
+                // Loop through list of OrderVM
+                foreach (var order in orders)
+                {
+                    // Init product dict
+                    Dictionary<string, int> productsAndQty = new Dictionary<string, int>();
+
+                    // Declare total
+                    decimal total = 0m;
+
+                    // Init list of OrderDetailsDTO
+                    List<OrderDetailsDTO> orderDetailsList = db.OrderDetails.Where(X => X.OrderId == order.OrderId).ToList();
+
+                    // Get username
+                    UserDTO user = db.Users.Where(x => x.Id == order.UserId).FirstOrDefault();
+                    string username = user.Username;
+
+                    // Loop through list of OrderDetailsDTO
+                    foreach (var orderDetails in orderDetailsList)
+                    {
+                        // Get product
+                        ProductDTO product = db.Products.Where(x => x.Id == orderDetails.ProductId).FirstOrDefault();
+
+                        // Get product price
+                        decimal price = product.Price;
+
+                        // Get product name
+                        string productName = product.Name;
+
+                        // Add to product dict
+                        productsAndQty.Add(productName, orderDetails.Quantity);
+
+                        // Get total
+                        total += orderDetails.Quantity * price;
+                    }
+
+                    // Add to ordersForAdminVM list
+                    ordersForAdmin.Add(new OrdersForAdminVM()
+                    {
+                        OrderNumber = order.OrderId,
+                        Username = username,
+                        Total = total,
+                        ProductsAndQty = productsAndQty,
+                        CreatedAt = order.CreatedAt
+                    });
+                }
+            }
+
+            // Return view with OrdersForAdminVM list
+            return View(ordersForAdmin);
         }
 
 

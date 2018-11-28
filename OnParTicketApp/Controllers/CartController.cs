@@ -262,12 +262,13 @@ namespace OnParTicketApp.Controllers
             }
 
             // Email admin
-            var client = new SmtpClient("mailtrap.io", 2525)
+            var client = new SmtpClient("smtp.mailtrap.io", 2525)
             {
-                Credentials = new NetworkCredential("21f57cbb94cf88", "e9d7055c69f02d"),
+                Credentials = new NetworkCredential("90b88b746f7644", "fe9c04ebbf4216"),
                 EnableSsl = true
             };
             client.Send("admin@example.com", "admin@example.com", "New Order", "You have a new order. Order number " + orderId);
+
 
             // Reset session
             Session["cart"] = null;
