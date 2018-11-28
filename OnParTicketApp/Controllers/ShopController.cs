@@ -64,7 +64,11 @@ namespace OnParTicketApp.Controllers
 
                 // Get category name
                 var productCat = db.Products.Where(x => x.CategoryId == catId).FirstOrDefault();
-                ViewBag.CategoryName = productCat.CategoryName;
+
+                if (productCat != null)
+                {
+                    ViewBag.CategoryName = productCat.CategoryName;
+                }
             }
 
             // Return view with list
@@ -176,7 +180,14 @@ namespace OnParTicketApp.Controllers
                 product.Verified = model.Verified;
                 product.PdfName = pdfsName;
                 product.ImageName = imagesName;
-                product.CategoryId = model.CategoryId;
+                if (model.CategoryId != 0)
+                {
+                    product.CategoryId = 6;
+                }
+                else
+                {
+                    product.CategoryId = model.CategoryId;
+                }
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
                 product.CategoryName = catDTO.Name;
                 product.UserId = user;
@@ -423,7 +434,6 @@ namespace OnParTicketApp.Controllers
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
-
                 dto.Name = model.Name;
                 dto.Slug = model.Name.Replace(" ", "-").ToLower();
                 dto.Description = model.Description;
@@ -432,7 +442,9 @@ namespace OnParTicketApp.Controllers
                 dto.PdfName = pdfsName;
                 dto.ImageName = imagesName;
                 dto.Price = model.Price;
-                dto.CategoryId = model.CategoryId;
+
+                    dto.CategoryId = model.CategoryId;
+                
                 dto.UserId = user;
 
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);

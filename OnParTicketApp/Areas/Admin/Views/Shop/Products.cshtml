@@ -9,7 +9,7 @@
 
 <h2>Listings</h2>
 
-<select id="SelectedCategory" name="SelectedCategory">
+@*<select id="SelectedCategory" name="SelectedCategory">
     <option value="0">All</option>
     @foreach (var item in ViewBag.Categories)
     {
@@ -21,12 +21,12 @@
         {
             <option value="@item.Value">@item.Text</option>
         }
-    }
-</select>
+    }</select>*@
+
 <br /> <br />
-<p>
+@*<p>
     @Html.ActionLink("Add New Listing", "AddProduct")
-</p>
+</p>*@
 
 @if (TempData["SM"] != null)
 {
@@ -63,38 +63,38 @@
 
     @foreach (var product in ViewBag.OnePageOfProducts)
     {
-    <tr>
-        <td>
-            @product.Name
-        </td>
-        <td>
-            @product.Description
-        </td>
-        <td>
-            $@product.Price
-        </td>
-        <td>
-            <a href="/admin/shop/EditProduct/@product.Id">
-                <img src='@Url.Action("GetImage", "Shop", new { id = product.Id })' width="200" height="200" />
-            </a>
-        </td>
-        <td>
-            @product.ReservationDate
-        </td>
-        <td>
-            @product.Verified
-        </td>
-        <td>
-            @if (User.IsInRole("Admin"))
-            {
-            @Html.ActionLink("Download PDF", "DownloadPdf", new { id = product.Id })
-            }
-        </td>
-        <td>
+        <tr>
+            <td>
+                @product.Name
+            </td>
+            <td>
+                @product.Description
+            </td>
+            <td>
+                $@product.Price
+            </td>
+            <td>
+                <a href="/admin/shop/EditProduct/@product.Id">
+                    <img src='@Url.Action("GetImage", "Shop", new { id = product.Id })' width="200" height="200" />
+                </a>
+            </td>
+            <td>
+                @product.ReservationDate
+            </td>
+            <td>
+                @product.Verified
+            </td>
+            <td>
+                @if (User.IsInRole("Admin"))
+                {
+                    @Html.ActionLink("Download PDF", "DownloadPdf", new { id = product.Id })
+                }
+            </td>
+            <td>
                 @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }) |
                 @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "delete" })
             </td>
-    </tr>
+        </tr>
     }
 </table>
 
