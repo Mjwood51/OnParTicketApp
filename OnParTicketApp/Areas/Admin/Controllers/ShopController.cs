@@ -122,13 +122,14 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 {
                     foreach (ProductDTO pr in prod)
                     {
-                        OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == pr.Id).FirstOrDefault();
-                        OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
-                        if (dte != null)
-                        {
+                        if(db.OrderDetails.Any(x=>x.ProductId == pr.Id))
+                        { 
+                            OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == pr.Id).FirstOrDefault();
+                            OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
                             db.OrderDetails.Remove(dte);
                             db.Orders.Remove(ord);
                         }
+
                         db.Products.Remove(pr);
                     }
                 } 
@@ -494,10 +495,10 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
-                OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == dto.Id).FirstOrDefault();
-                OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
-                if(dte != null)
+                if (db.OrderDetails.Any(x => x.ProductId == id))
                 {
+                    OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == id).FirstOrDefault();
+                    OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
                     db.OrderDetails.Remove(dte);
                     db.Orders.Remove(ord);
                 }
