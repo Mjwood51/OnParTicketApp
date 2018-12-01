@@ -1,4 +1,5 @@
-﻿using OnParTicketApp.Models.Data;
+﻿using OnParTicketApp.Controllers;
+using OnParTicketApp.Models.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,23 @@ namespace OnParTicketApp
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+
+        public class IPrincipalModelBinder : IModelBinder
+        {
+            public object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
+            {
+                if (controllerContext == null)
+                {
+                    throw new ArgumentNullException("controllerContext");
+                }
+                if (bindingContext == null)
+                {
+                    throw new ArgumentNullException("bindingContext");
+                }
+                IPrincipal p = controllerContext.HttpContext.User;
+                return p;
+            }
         }
 
         protected void Application_AuthenticateRequest()

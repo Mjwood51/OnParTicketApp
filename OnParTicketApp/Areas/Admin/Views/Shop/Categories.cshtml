@@ -3,7 +3,12 @@
 @{
     ViewBag.Title = "Categories";
 }
-
+@if (TempData["SM"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SM"]
+    </div>
+}
 <h2>Categories</h2>
 
 <div class="new-cat">
@@ -138,12 +143,12 @@ else
 
 
             /*
-             *Confirm category deletion 
+             *Confirm category deletion
              */
 
 
             $("body").on("click", "a.delete", function () {
-                if (!confirm("Confirm page deletion")) return false;
+                if (!confirm("Are you sure you would like to delete this category?  Deleting this category will delete all associated listings and orders marked under this category.")) return false;
             });
 
             //////////////////////////////////////////////////////
@@ -202,7 +207,7 @@ else
 
             });
         });
-        //////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////
     </script>
 
 }

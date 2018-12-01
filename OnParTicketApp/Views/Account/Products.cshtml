@@ -1,0 +1,67 @@
+﻿@model IEnumerable<OnParTicketApp.Models.ViewModels.Account.ProductsForUserVM>
+
+@{
+    ViewBag.Title = "Products";
+}
+
+<h2>Listings</h2>
+
+@if (!Model.Any())
+{
+    <h3 class="text-center">You have no listings.</h3>
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Username)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ReservationDate)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Username)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CategoryName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReservationDate)
+            </td>
+            <td>
+                <a href="~/Shop/EditProduct/@item.ProductId">Edit</a> |
+                @Html.ActionLink("Delete", "DeleteProduct", new { id = item.ProductId })
+            </td>
+        </tr>
+        }
+
+        </table>
+}

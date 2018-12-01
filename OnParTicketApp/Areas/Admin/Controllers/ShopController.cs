@@ -117,18 +117,31 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             {
                 //Get the page
                 CategoryDTO dto = db.Categories.Find(id);
-
+                List<ProductDTO> prod = db.Products.Where(x=>x.CategoryId == id).ToList();
+                if (prod != null)
+                {
+                    foreach (ProductDTO pr in prod)
+                    {
+                        OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == pr.Id).FirstOrDefault();
+                        OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
+                        if (dte != null)
+                        {
+                            db.OrderDetails.Remove(dte);
+                            db.Orders.Remove(ord);
+                        }
+                        db.Products.Remove(pr);
+                    }
+                } 
                 //Remove the category
                 db.Categories.Remove(dto);
 
                 //Save
                 db.SaveChanges();
             }
-
+            TempData["SM"] = "You have deleted a category!";
 
             //Redirect
-            return RedirectToAction("Categories" +
-                "");
+            return RedirectToAction("Categories");
         }
 
         // POST:  Admin/Shop/RenameCategory
@@ -170,6 +183,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
             using (TicketAppDB db = new TicketAppDB())
             {
+                //Get seller name
                 //Init the list
                 listOfProductVM = db.Products.ToArray()
                                   .Where(x => catId == null || catId == 0 || x.CategoryId == catId)
@@ -449,7 +463,6 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
-
                 dto.Name = model.Name;
                 dto.Slug = model.Name.Replace(" ", "-").ToLower();
                 dto.Description = model.Description;
@@ -471,7 +484,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
 
             // Redirect
-            return RedirectToAction("EditProduct");
+            return RedirectToAction("Products", "Shop");
         }
 
         // GET: Admin/Shop/DeleteProduct/id
@@ -481,15 +494,23 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
+                OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == dto.Id).FirstOrDefault();
+                OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
+                if(dte != null)
+                {
+                    db.OrderDetails.Remove(dte);
+                    db.Orders.Remove(ord);
+                }
                 db.Products.Remove(dto);
 
                 db.SaveChanges();
             }
-
             TempData["SM"] = "You have deleted a listing!";
+
             // Redirect
             return RedirectToAction("Products");
         }
+
 
         // GET: Admin/Shop/Orders
         public ActionResult Orders()
@@ -514,16 +535,21 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                     // Init list of OrderDetailsDTO
                     List<OrderDetailsDTO> orderDetailsList = db.OrderDetails.Where(X => X.OrderId == order.OrderId).ToList();
 
-                    // Get username
+                    // Get username of buyer
                     UserDTO user = db.Users.Where(x => x.Id == order.UserId).FirstOrDefault();
                     string username = user.Username;
 
+                    //string buyerName = "";
+                    string buyer = "";
                     // Loop through list of OrderDetailsDTO
                     foreach (var orderDetails in orderDetailsList)
                     {
                         // Get product
                         ProductDTO product = db.Products.Where(x => x.Id == orderDetails.ProductId).FirstOrDefault();
 
+                        //Get username of seller
+                        UserDTO buyerName = db.Users.Where(x=>x.Username == product.User.Username).FirstOrDefault();
+                        buyer = buyerName.Username;
                         // Get product price
                         decimal price = product.Price;
 
@@ -541,7 +567,8 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                     ordersForAdmin.Add(new OrdersForAdminVM()
                     {
                         OrderNumber = order.OrderId,
-                        Username = username,
+                        BuyerName = username,
+                        SellerName = buyer,
                         Total = total,
                         ProductsAndQty = productsAndQty,
                         CreatedAt = order.CreatedAt

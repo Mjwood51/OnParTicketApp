@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using OnParTicketApp.Models.Data;
 using OnParTicketApp.Models.ViewModels.Shop;
 using PagedList;
@@ -10,12 +11,16 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
 namespace OnParTicketApp.Controllers
 {
+    
+
     public class ShopController : Controller
     {
         private SqlConnection con;
@@ -77,6 +82,7 @@ namespace OnParTicketApp.Controllers
 
         public ActionResult Products(int? page, int? catId)
         {
+            
             //Declare a list of ProductVM
             List<ProductVM> listOfProductVM;
 
@@ -85,11 +91,20 @@ namespace OnParTicketApp.Controllers
 
             using (TicketAppDB db = new TicketAppDB())
             {
+                //Get current user
+                UserDTO user = db.Users.Where(x => x.Username == User.Identity.Name).FirstOrDefault();
+                int userId = user.Id;
+
                 //Init the list
                 listOfProductVM = db.Products.ToArray()
-                                  .Where(x => catId == null || catId == 0 || x.CategoryId == catId)
+                                  .Where(x=>x.UserId == userId) 
                                   .Select(x => new ProductVM(x))
                                   .ToList();
+
+                foreach (ProductVM product in listOfProductVM)
+                {
+                    product.Username = user.Username;
+                }
 
                 //Populate categories select list
                 ViewBag.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
@@ -109,6 +124,7 @@ namespace OnParTicketApp.Controllers
         }
 
         // GET:  Admin/Shop/AddProduct
+        [Authorize]
         [HttpGet]
         public ActionResult AddProduct()
         {
@@ -126,10 +142,11 @@ namespace OnParTicketApp.Controllers
         }
 
         // POST:  Admin/Shop/AddProduct
+        [Authorize]
         [HttpPost]
         public ActionResult AddProduct(ProductVM model, HttpPostedFileBase uploadPDF, HttpPostedFileBase uploadPhoto)
         {
-            int user = Convert.ToInt32(User.Identity.GetUserId());
+            string UserID = User.Identity.Name;
             HttpPostedFileBase photobase = uploadPhoto;
             HttpPostedFileBase pdfbase = uploadPDF;
             //Check model state
@@ -171,7 +188,9 @@ namespace OnParTicketApp.Controllers
             {
                 //Init and save product DTO
                 ProductDTO product = new ProductDTO();
-
+                var userId = from p in db.Users
+                             where p.Username == UserID
+                             select p.Id;
                 product.Name = model.Name;
                 product.Slug = model.Name.Replace(" ", "-").ToLower();
                 product.Description = model.Description;
@@ -190,7 +209,8 @@ namespace OnParTicketApp.Controllers
                 }
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
                 product.CategoryName = catDTO.Name;
-                product.UserId = user;
+                product.UserId = userId.First();
+                
 
                 db.Products.Add(product);
                 db.SaveChanges();
@@ -290,10 +310,6 @@ namespace OnParTicketApp.Controllers
 
                 // Make a select list
                 model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
-
-                // Get all gallery images
-                /*model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs"))
-                                                .Select(fn => Path.GetFileName(fn));*/
             }
 
             // Return view with model
@@ -301,19 +317,16 @@ namespace OnParTicketApp.Controllers
         }
 
         [HttpPost]
-        public ActionResult EditProduct(ProductVM model, HttpPostedFileBase uploadPhoto, HttpPostedFileBase uploadPDF)
+        public ActionResult EditProduct(ProductVM model, HttpPostedFileBase uploadPhoto, HttpPostedFileBase uploadPDF, int id)
         {
-            int user = Convert.ToInt32(User.Identity.GetUserId());
             // Get product id
-            int id = model.Id;
+            id = model.Id;
 
             // Populate categories select list and gallery images
             using (TicketAppDB db = new TicketAppDB())
             {
                 model.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
             }
-            //model.GalleryImages = Directory.EnumerateFiles(Server.MapPath("~/Images/Uploads/Products/" + id + "/Gallery/Thumbs"))
-            //                                    .Select(fn => Path.GetFileName(fn));
 
             // Check model state
             if (!ModelState.IsValid)
@@ -434,6 +447,7 @@ namespace OnParTicketApp.Controllers
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
+                UserDTO user = db.Users.Where(x => x.Username == User.Identity.Name).FirstOrDefault();
                 dto.Name = model.Name;
                 dto.Slug = model.Name.Replace(" ", "-").ToLower();
                 dto.Description = model.Description;
@@ -442,10 +456,8 @@ namespace OnParTicketApp.Controllers
                 dto.PdfName = pdfsName;
                 dto.ImageName = imagesName;
                 dto.Price = model.Price;
-
-                    dto.CategoryId = model.CategoryId;
-                
-                dto.UserId = user;
+                dto.CategoryId = model.CategoryId;
+                dto.UserId = user.Id;
 
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
                 dto.CategoryName = catDTO.Name;
@@ -458,7 +470,31 @@ namespace OnParTicketApp.Controllers
 
 
             // Redirect
-            return RedirectToAction("EditProduct");
+            return RedirectToAction("Products", "Shop");
+        }
+
+        // GET: Admin/Shop/DeleteProduct/id
+        public ActionResult DeleteProduct(int id)
+        {
+            // Delete product from DB
+            using (TicketAppDB db = new TicketAppDB())
+            {
+                ProductDTO dto = db.Products.Find(id);
+                OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == dto.Id).FirstOrDefault();
+                OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
+                if (dte != null)
+                {
+                    db.OrderDetails.Remove(dte);
+                    db.Orders.Remove(ord);
+                }
+                db.Products.Remove(dto);
+
+                db.SaveChanges();
+            }
+
+            TempData["SM"] = "You have deleted a listing!";
+            // Redirect
+            return RedirectToAction("Products", "Shop");
         }
 
         // GET: /shop/product-details/name
@@ -492,7 +528,7 @@ namespace OnParTicketApp.Controllers
 
             // Return view with model
             return View("ProductDetails", model);
-        }
+        } 
 
         [HttpGet]
         public FileResult DownloadPdf(int id)

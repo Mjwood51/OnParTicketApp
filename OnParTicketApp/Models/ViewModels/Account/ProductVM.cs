@@ -7,7 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace OnParTicketApp.Models.ViewModels.Shop
+namespace OnParTicketApp.Models.ViewModels.Account
 {
 
     public class MyDate : ValidationAttribute
@@ -15,7 +15,7 @@ namespace OnParTicketApp.Models.ViewModels.Shop
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             DateTime _pickedDate = Convert.ToDateTime(value);
-            if (_pickedDate > DateTime.Now.Date.AddDays(-1))
+            if (_pickedDate >= DateTime.Today)
             {
                 return ValidationResult.Success;
             }
@@ -47,12 +47,6 @@ namespace OnParTicketApp.Models.ViewModels.Shop
             ReservationDate = row.ReservationDate;
             Verified = row.Verified;
             UserId = row.UserId;
-            using (TicketAppDB db = new TicketAppDB())
-            {
-                UserDTO user = new UserDTO();
-                user = db.Users.Where(x => x.Id == UserId).FirstOrDefault();
-                Username = user.Username;
-            }
     }
 
 
@@ -76,7 +70,6 @@ namespace OnParTicketApp.Models.ViewModels.Shop
         public DateTime? ReservationDate { get; set; }
         public Verified Verified { get; set; }
         public int UserId { get; set; }
-        public string Username { get; set; }
 
         public IEnumerable<SelectListItem> Categories { get; set; }
         public IEnumerable<string> GalleryImages { get; set; }

@@ -9,24 +9,10 @@
 
 <h2>Listings</h2>
 
-@*<select id="SelectedCategory" name="SelectedCategory">
-    <option value="0">All</option>
-    @foreach (var item in ViewBag.Categories)
-    {
-        if (ViewBag.SelectedCat == item.Value)
-        {
-            <option selected="selected" value="@item.Value">@item.Text</option>
-        }
-        else
-        {
-            <option value="@item.Value">@item.Text</option>
-        }
-    }</select>*@
+
 
 <br /> <br />
-@*<p>
-    @Html.ActionLink("Add New Listing", "AddProduct")
-</p>*@
+
 
 @if (TempData["SM"] != null)
 {
@@ -38,10 +24,16 @@
 <table class="table">
     <tr>
         <th>
+            Seller
+        </th>
+        <th>
             Name
         </th>
         <th>
             Description
+        </th>
+        <th>
+            Category
         </th>
         <th>
             Price
@@ -63,38 +55,44 @@
 
     @foreach (var product in ViewBag.OnePageOfProducts)
     {
-        <tr>
-            <td>
-                @product.Name
-            </td>
-            <td>
-                @product.Description
-            </td>
-            <td>
-                $@product.Price
-            </td>
-            <td>
-                <a href="/admin/shop/EditProduct/@product.Id">
-                    <img src='@Url.Action("GetImage", "Shop", new { id = product.Id })' width="200" height="200" />
-                </a>
-            </td>
-            <td>
-                @product.ReservationDate
-            </td>
-            <td>
-                @product.Verified
-            </td>
-            <td>
-                @if (User.IsInRole("Admin"))
-                {
-                    @Html.ActionLink("Download PDF", "DownloadPdf", new { id = product.Id })
-                }
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }) |
-                @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "delete" })
-            </td>
-        </tr>
+    <tr>
+        <td>
+            @product.Username
+        </td>
+        <td>
+            @product.Name
+        </td>
+        <td>
+            @product.Description
+        </td>
+        <td>
+            @product.CategoryName
+        </td>
+        <td>
+            $@product.Price
+        </td>
+        <td>
+            <a href="/admin/shop/EditProduct/@product.Id">
+                <img src='@Url.Action("GetImage", "Shop", new { id = product.Id })' width="200" height="200" />
+            </a>
+        </td>
+        <td>
+            @product.ReservationDate
+        </td>
+        <td>
+            @product.Verified
+        </td>
+        <td>
+            @if (User.IsInRole("Admin"))
+            {
+                @Html.ActionLink("Download PDF", "DownloadPdf", new { id = product.Id })
+            }
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "EditProduct", new { id = product.Id }) |
+            @Html.ActionLink("Delete", "DeleteProduct", new { id = product.Id }, new { @class = "delete" })
+        </td>
+    </tr>
     }
 </table>
 

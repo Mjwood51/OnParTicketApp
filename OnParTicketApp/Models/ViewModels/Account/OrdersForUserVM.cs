@@ -11,5 +11,6 @@ namespace OnParTicketApp.Models.ViewModels.Account
         public decimal Total { get; set; }
         public Dictionary<string, int> ProductsAndQty { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string SellerName { get; set; }
     }
 }

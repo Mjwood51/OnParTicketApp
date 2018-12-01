@@ -3,11 +3,17 @@
 @{
     ViewBag.Title = ViewBag.CategoryName;
 }
-
+@if (!Model.Any())
+{
+    <h3 class="text-center">There are no listings under this category.</h3>
+}
 <h2>@ViewBag.CategoryName</h2>
 
 <table class="table">
     <tr>
+        <th>
+            Seller
+        </th>
         <th>
             Name
         </th>
@@ -31,31 +37,34 @@
 
     @foreach (var item in Model)
     {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            $@Html.DisplayFor(modelItem => item.Price)
-        </td>
-        <td>
-            <a href="/shop/product-details/@item.Slug">
-                <img src='@Url.Action("GetImage", "Shop", new { id = item.Id })' width="200" height="200" />
-            </a>
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ReservationDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Verified)
-        </td>
-        <td>
-            <a href="/shop/product-details/@item.Slug">Details</a>
-        </td>
-    </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Username)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                $@Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                <a href="/shop/product-details/@item.Slug">
+                    <img src='@Url.Action("GetImage", "Shop", new { id = item.Id })' width="200" height="200" />
+                </a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReservationDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Verified)
+            </td>
+            <td>
+                <a href="/shop/product-details/@item.Slug">Details</a>
+            </td>
+        </tr>
     }
 
 </table>

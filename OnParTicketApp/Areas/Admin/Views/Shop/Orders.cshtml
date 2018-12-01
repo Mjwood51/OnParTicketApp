@@ -18,7 +18,10 @@ else
                 Order Number
             </th>
             <th>
-                Username
+                Buyer
+            </th>
+            <th>
+                Seller
             </th>
             <th>
                 Order Details
@@ -34,26 +37,29 @@ else
 
         @foreach (var item in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.OrderNumber)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Username)
-                </td>
-                <td>
-                    @foreach (var item2 in item.ProductsAndQty)
-                    {
-                        @item2.Key @:x @item2.Value <br />
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CreatedAt)
-                </td>
-                <td>
-                    $@Html.DisplayFor(modelItem => item.Total)
-                </td>
-            </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.OrderNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BuyerName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SellerName)
+            </td>
+            <td>
+                @foreach (var item2 in item.ProductsAndQty)
+                {
+                    @item2.Key @:x @item2.Value <br />
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                $@Html.DisplayFor(modelItem => item.Total)
+            </td>
+        </tr>
         }
 
     </table>
