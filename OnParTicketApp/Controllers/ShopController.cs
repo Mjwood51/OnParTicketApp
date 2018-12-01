@@ -199,14 +199,7 @@ namespace OnParTicketApp.Controllers
                 product.Verified = model.Verified;
                 product.PdfName = pdfsName;
                 product.ImageName = imagesName;
-                if (model.CategoryId != 0)
-                {
-                    product.CategoryId = 6;
-                }
-                else
-                {
-                    product.CategoryId = model.CategoryId;
-                }
+                product.CategoryId = model.CategoryId;
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
                 product.CategoryName = catDTO.Name;
                 product.UserId = userId.First();
