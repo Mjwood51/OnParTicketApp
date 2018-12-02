@@ -449,7 +449,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 pdfs = db.Pdfs.Where(x=>x.ProductId == id).FirstOrDefault();
                 pdfsName = pdfs.Name;
                 images = db.Photos.Where(x => x.ProductId == id).FirstOrDefault();
-                imagesName = pdfs.Name;
+                imagesName = images.Name;
             }
             if (uploadPDF != null)
             {
