@@ -3,17 +3,52 @@
     ViewBag.Title = "Dashboard";
 }
 
+@if (TempData["SM"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SM"]
+    </div>
+}
+
 <h2>Current Users</h2>
-<br/>
+<br />
 @{
     Html.RenderAction("GetUsers", "Dashboard");
 }
-<br/>
-<br/>
-<br/>
+<br />
+<br />
+<br />
 <h2>Listings To Be Verified</h2>
-<br/>
-@{ 
+<br />
+@{
     Html.RenderAction("GetUnverified", "Dashboard");
+}
+
+@section Scripts{
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <script>
+
+        $(function () {
+
+            /*
+             *Confirm page deletion
+             */
+
+            //////////////////////////////////////////////////////
+
+
+            /*
+             *Confirm page deletion
+             */
+            $("a.delete").click(function () {
+                if (!confirm("Are you sure you want to delete this user? All listings and orders associated with the user will also be deleted.")) return false;
+            });
+
+            //////////////////////////////////////////////////////
+
+
+        });
+    </script>
+
 }
 

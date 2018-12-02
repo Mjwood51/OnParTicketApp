@@ -3,6 +3,8 @@
 @{
     ViewBag.Title = ViewBag.CategoryName;
 }
+@using PagedList.Mvc;
+@using PagedList;
 @if (!Model.Any())
 {
     <h3 class="text-center">There are no listings under this category.</h3>
@@ -35,20 +37,20 @@
         <th></th>
     </tr>
 
-    @foreach (var item in Model)
+    @foreach (var item in ViewBag.OnePageOfProducts)
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Username)
+                @item.Username
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @item.Name
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Description)
+                @item.Description
             </td>
             <td>
-                $@Html.DisplayFor(modelItem => item.Price)
+                $@item.Price
             </td>
             <td>
                 <a href="/shop/product-details/@item.Slug">
@@ -56,10 +58,10 @@
                 </a>
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ReservationDate)
+                @item.ReservationDate
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Verified)
+                @item.Verified
             </td>
             <td>
                 <a href="/shop/product-details/@item.Slug">Details</a>
@@ -68,3 +70,5 @@
     }
 
 </table>
+
+@Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("Category", new { page, catId = ViewBag.SelectedCat }))

@@ -43,6 +43,44 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 return PartialView(listings);
             } 
         }
+
+        public ActionResult DeleteUser(int id)
+        {
+            using (TicketAppDB db = new TicketAppDB())
+            {
+                //Get products of user, remove those products
+                List<ProductDTO> listings = db.Products.Where(x => x.UserId == id).ToList();
+                foreach(ProductDTO prod in listings)
+                {
+                    db.Products.Remove(prod);
+                }
+
+                //Get orderdetails of user
+                List<OrderDetailsDTO> details = db.OrderDetails.Where(x => x.UserId == id).ToList();
+
+                //Get orders of user, remove orders and orderdetails, move any ordered products back as an available listing
+                if (details.Any())
+                {
+                    foreach (OrderDetailsDTO order in details)
+                    {
+                        OrderDTO anOrder = db.Orders.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
+                        ProductDTO product = db.Products.Where(x => x.Id == order.ProductId).FirstOrDefault();
+                        product.IsSold = false;
+                        db.Orders.Remove(anOrder);
+                        db.OrderDetails.Remove(order);
+                    }
+                }
+
+                //Get user and remove the user
+                UserDTO user = db.Users.Where(x => x.Id == id).FirstOrDefault();
+                string u = user.Username;
+                db.Users.Remove(user);
+
+                db.SaveChanges();
+                TempData["SM"] = "You have removed " + u + " from the website.";
+                return RedirectToAction("Index");
+            }
+        }
     }
 
 }

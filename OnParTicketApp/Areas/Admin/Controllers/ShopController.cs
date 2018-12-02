@@ -161,6 +161,14 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 //Get DTO
                 CategoryDTO dto = db.Categories.Find(id);
 
+                //Change listings that were in old category name to new category name
+                List<ProductDTO> products = db.Products.Where(x => x.CategoryId == id).ToList();
+
+                foreach (ProductDTO prod in products)
+                {
+                    prod.CategoryName = newCatName;
+                }
+
                 //Edit DTO
                 dto.Name = newCatName;
                 dto.Slug = newCatName.Replace(" ", "-").ToLower();
@@ -461,6 +469,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 imagesName = uploadPhoto.FileName;
             }
             // Update product
+            string name = "";
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
@@ -473,7 +482,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 dto.ImageName = imagesName;
                 dto.Price = model.Price;
                 dto.CategoryId = model.CategoryId;
-
+                name = model.Name;
                 CategoryDTO catDTO = db.Categories.FirstOrDefault(x => x.Id == model.CategoryId);
                 //dto.CategoryName = catDTO.Name;
 
@@ -481,22 +490,24 @@ namespace OnParTicketApp.Areas.Admin.Controllers
             }
 
             // Set TempData message
-            TempData["SM"] = "You have edited a listing!";
+            TempData["SM"] = "You have edited '" + name +"'!";
 
 
             // Redirect
-            return RedirectToAction("Products", "Shop");
+            return RedirectToAction("Index", "Dashboard");
         }
 
         // GET: Admin/Shop/DeleteProduct/id
         public ActionResult DeleteProduct(int id)
         {
+            string name = "";
             // Delete product from DB
             using (TicketAppDB db = new TicketAppDB())
             {
                 PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == id).FirstOrDefault();
                 PhotoDTO photo = db.Photos.Where(x => x.ProductId == id).FirstOrDefault();
                 ProductDTO dto = db.Products.Find(id);
+                name = dto.Name;
                 if (db.OrderDetails.Any(x => x.ProductId == id))
                 {
                     
@@ -510,7 +521,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 db.Photos.Remove(photo);
                 db.SaveChanges();
             }
-            TempData["SM"] = "You have deleted a listing!";
+            TempData["SM"] = "You have deleted '" + name + "'!";
 
             // Redirect
             return RedirectToAction("Products");
@@ -583,6 +594,29 @@ namespace OnParTicketApp.Areas.Admin.Controllers
 
             // Return view with OrdersForAdminVM list
             return View(ordersForAdmin);
+        }
+
+        public ActionResult DeleteOrder(int id)
+        {
+            string order = "";
+            using (TicketAppDB db = new TicketAppDB())
+            {
+
+                //Get the order, product, and details. Make product available again for sale, delete orders and order details
+
+                OrderDetailsDTO orderDetail = db.OrderDetails.Where(x => x.OrderId == id).FirstOrDefault();
+                OrderDTO anOrder = db.Orders.Where(x => x.OrderId == orderDetail.OrderId).FirstOrDefault();
+                order = orderDetail.Products.Name;
+                ProductDTO product = db.Products.Where(x => x.Id == orderDetail.ProductId).FirstOrDefault();
+                db.OrderDetails.Remove(orderDetail);
+                db.Orders.Remove(anOrder);
+                product.IsSold = false;
+                db.SaveChanges();
+            }
+
+            TempData["SM"] = "You have deleted '" + order + "'!";
+
+            return RedirectToAction("Orders");
         }
 
 

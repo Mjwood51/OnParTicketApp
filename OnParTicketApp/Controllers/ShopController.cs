@@ -53,16 +53,20 @@ namespace OnParTicketApp.Controllers
         }
 
         // GET: /shop/category/name
-        public ActionResult Category(string name)
+        public ActionResult Category(int? page, int? catId, string name)
         {
             // Declare a list of ProductVM
             List<ProductVM> productVMList;
+
+            //init page list
+            //Set page number
+            var pageNumber = page ?? 1;
 
             using (TicketAppDB db = new TicketAppDB())
             {
                 // Get category id
                 CategoryDTO categoryDTO = db.Categories.Where(x => x.Slug == name).FirstOrDefault();
-                int catId = categoryDTO.Id;
+                catId = categoryDTO.Id;
 
                 // Init the list
                 productVMList = db.Products.ToArray().Where(x => x.CategoryId == catId && x.IsSold == false && x.Verified != 0).Select(x => new ProductVM(x)).ToList();
@@ -74,7 +78,19 @@ namespace OnParTicketApp.Controllers
                 {
                     ViewBag.CategoryName = productCat.CategoryName;
                 }
+
+                //Populate categories select list
+                ViewBag.Categories = new SelectList(db.Categories.ToList(), "Id", "Name");
+
+                //Set selected category
+                ViewBag.SelectedCat = catId.ToString();
             }
+
+            
+
+            //Set pagination
+            var onePageOfProducts = productVMList.ToPagedList(pageNumber, 3);
+            ViewBag.OnePageOfProducts = onePageOfProducts;
 
             // Return view with list
             return View(productVMList);
@@ -184,6 +200,7 @@ namespace OnParTicketApp.Controllers
             {
                 imagesName= uploadPhoto.FileName;
             }
+            string name = "";
             using (TicketAppDB db = new TicketAppDB())
             {
                 //Init and save product DTO
@@ -192,6 +209,7 @@ namespace OnParTicketApp.Controllers
                              where p.Username == UserID
                              select p.Id;
                 product.Name = model.Name;
+                name = model.Name;
                 product.Slug = model.Name.Replace(" ", "-").ToLower();
                 product.Description = model.Description;
                 product.Price = model.Price;
@@ -276,7 +294,7 @@ namespace OnParTicketApp.Controllers
             }
 
             //Set TempData message
-            TempData["SM"] = "You have added a listing!";
+            TempData["SM"] = "You have added listing: '" + name + "'!";
 
             //Redirect
             return RedirectToAction("AddProduct");
@@ -438,11 +456,13 @@ namespace OnParTicketApp.Controllers
                 imagesName = uploadPhoto.FileName;
             }
             // Update product
+            string product = "";
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
                 UserDTO user = db.Users.Where(x => x.Username == User.Identity.Name).FirstOrDefault();
                 dto.Name = model.Name;
+                product = model.Name;
                 dto.Slug = model.Name.Replace(" ", "-").ToLower();
                 dto.Description = model.Description;
                 dto.ReservationDate = model.ReservationDate;
@@ -460,7 +480,7 @@ namespace OnParTicketApp.Controllers
             }
 
             // Set TempData message
-            TempData["SM"] = "You have edited a listing!";
+            TempData["SM"] = "You have edited " + product + "'!";
 
 
             // Redirect
@@ -470,11 +490,13 @@ namespace OnParTicketApp.Controllers
         // GET: Admin/Shop/DeleteProduct/id
         public ActionResult DeleteProduct(int id)
         {
+            string product = "";
             // Delete product from DB
             using (TicketAppDB db = new TicketAppDB())
             {
                 ProductDTO dto = db.Products.Find(id);
                 PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == id).FirstOrDefault();
+                product = dto.Name;
                 PhotoDTO photo = db.Photos.Where(x => x.ProductId == id).FirstOrDefault();
                 //Determine if product is an order
                 if (db.OrderDetails.Any(x => x.ProductId == id))
@@ -491,7 +513,7 @@ namespace OnParTicketApp.Controllers
                 db.SaveChanges();
             }
 
-            TempData["SM"] = "You have deleted a listing!";
+            TempData["SM"] = "You have deleted '"+ product +"'!";
             // Redirect
             return RedirectToAction("Products", "Shop");
         }

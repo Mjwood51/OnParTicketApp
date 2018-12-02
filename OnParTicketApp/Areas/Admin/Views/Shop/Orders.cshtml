@@ -5,6 +5,12 @@
 }
 
 <h2>Orders</h2>
+@if (TempData["SM"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SM"]
+    </div>
+}
 
 @if (!Model.Any())
 {
@@ -37,30 +43,60 @@ else
 
         @foreach (var item in Model)
         {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.OrderNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BuyerName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SellerName)
-            </td>
-            <td>
-                @foreach (var item2 in item.ProductsAndQty)
-                {
-                    @item2.Key @:x @item2.Value <br />
-                }
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                $@Html.DisplayFor(modelItem => item.Total)
-            </td>
-        </tr>
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OrderNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BuyerName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SellerName)
+                </td>
+                <td>
+                    @foreach (var item2 in item.ProductsAndQty)
+                    {
+                        @item2.Key @:x @item2.Value <br />
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                </td>
+                <td>
+                    $@Html.DisplayFor(modelItem => item.Total)
+                </td>
+                <td>
+                    @Html.ActionLink("Delete Order", "DeleteOrder", new { id = item.OrderNumber }, new { @class = "delete" })
+                </td>
+            </tr>
         }
 
     </table>
+}
+@section Scripts{
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <script>
+
+        $(function () {
+
+            /*
+             *Confirm page deletion
+             */
+
+            //////////////////////////////////////////////////////
+
+
+            /*
+             *Confirm page deletion
+             */
+            $("a.delete").click(function () {
+                if (!confirm("Are you sure you want to delete this order?")) return false;
+            });
+
+            //////////////////////////////////////////////////////
+
+
+        });
+    </script>
+
 }
