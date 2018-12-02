@@ -66,15 +66,18 @@ namespace OnParTicketApp.Controllers
                 }
 
                 List<ProductDTO> prodList = db.Products.ToList();
-                OrderDTO ordering = new OrderDTO();
-                OrderDetailsDTO detail = new OrderDetailsDTO();
+
 
                 foreach(ProductDTO prod in prodList)
                 {
                     if(prod.ReservationDate < DateTime.Now.Date.AddDays(-1))
                     {
-                        detail = db.OrderDetails.Where(x => x.ProductId == prod.Id).FirstOrDefault();
-                        ordering = db.Orders.Where(x => x.OrderId == detail.OrderId).FirstOrDefault();
+                        OrderDetailsDTO detail = db.OrderDetails.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                        OrderDTO ordering = db.Orders.Where(x => x.OrderId == detail.OrderId).FirstOrDefault();
+                        PhotoDTO photo = db.Photos.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                        PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                        db.Pdfs.Remove(pdf);
+                        db.Photos.Remove(photo);
                         db.Orders.Remove(ordering);
                         db.OrderDetails.Remove(detail);
                         db.Products.Remove(prod);

@@ -478,10 +478,14 @@ namespace OnParTicketApp.Controllers
                 //Determine if product is an order
                 if (db.OrderDetails.Any(x => x.ProductId == id))
                 {
+                    PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == id).FirstOrDefault();
+                    PhotoDTO photo = db.Photos.Where(x => x.ProductId == id).FirstOrDefault();
                     OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == id).FirstOrDefault();
                     OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
                     db.OrderDetails.Remove(dte);
                     db.Orders.Remove(ord);
+                    db.Pdfs.Remove(pdf);
+                    db.Photos.Remove(photo);
                 }
                 db.Products.Remove(dto);
 
