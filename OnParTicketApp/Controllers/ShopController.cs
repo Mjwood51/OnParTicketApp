@@ -65,7 +65,7 @@ namespace OnParTicketApp.Controllers
                 int catId = categoryDTO.Id;
 
                 // Init the list
-                productVMList = db.Products.ToArray().Where(x => x.CategoryId == catId && x.IsSold == false).Select(x => new ProductVM(x)).ToList();
+                productVMList = db.Products.ToArray().Where(x => x.CategoryId == catId && x.IsSold == false && x.Verified != 0).Select(x => new ProductVM(x)).ToList();
 
                 // Get category name
                 var productCat = db.Products.Where(x => x.CategoryId == catId).FirstOrDefault();
