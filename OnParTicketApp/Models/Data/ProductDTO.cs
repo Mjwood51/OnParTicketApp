@@ -29,6 +29,7 @@ namespace OnParTicketApp.Models.Data
         public DateTime? ReservationDate { get; set; }
         public Verified Verified { get; set; }
         public int UserId { get; set; }
+        public bool IsSold { get; set; } 
 
         [ForeignKey("CategoryId")]
         public virtual CategoryDTO Category { get; set; }

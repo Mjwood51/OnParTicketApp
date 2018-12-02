@@ -519,6 +519,8 @@
     <Content Include="Areas\Admin\Views\Shop\Products.cshtml" />
     <Content Include="Areas\Admin\Views\Shop\EditProduct.cshtml" />
     <Content Include="Areas\Admin\Views\Shop\Orders.cshtml" />
+    <Content Include="Areas\Admin\Views\Dashboard\GetUsers.cshtml" />
+    <Content Include="Areas\Admin\Views\Dashboard\GetUnverified.cshtml" />
     <None Include="codesnippets.snippet" />
     <Content Include="Scripts\ckeditor\adapters\jquery.js" />
     <Content Include="Scripts\ckeditor\CHANGES.html" />

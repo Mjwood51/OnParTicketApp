@@ -3,5 +3,17 @@
     ViewBag.Title = "Dashboard";
 }
 
-<h2>Dashboard</h2>
+<h2>Current Users</h2>
+<br/>
+@{
+    Html.RenderAction("GetUsers", "Dashboard");
+}
+<br/>
+<br/>
+<br/>
+<h2>Listings To Be Verified</h2>
+<br/>
+@{ 
+    Html.RenderAction("GetUnverified", "Dashboard");
+}
 

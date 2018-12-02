@@ -1,0 +1,58 @@
+﻿@model IEnumerable<OnParTicketApp.Models.Data.ProductDTO>
+
+<table class="table">
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            Description
+        </th>
+        <th>
+            Price
+        </th>
+        <th>
+            Category
+        </th>
+        <th>
+            Reservation Date
+        </th>
+        <th>
+            PDF Download
+        </th>
+        <th>
+            SellerId
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Description)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Price)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CategoryName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ReservationDate)
+        </td>
+        <td>
+            <a href="~/admin/shop/DownloadPdf/@item.Id">Download PDF</a>
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UserId)
+        </td>
+        <td>
+            <a href="~/admin/shop/EditProduct/@item.Id">Edit</a>
+        </td>
+    </tr>
+}
+
+</table>

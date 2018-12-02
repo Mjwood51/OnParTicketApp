@@ -187,7 +187,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                 //Get seller name
                 //Init the list
                 listOfProductVM = db.Products.ToArray()
-                                  .Where(x => catId == null || catId == 0 || x.CategoryId == catId)
+                                  .Where(x => catId == null || catId == 0 || x.CategoryId == catId).Where(x=>x.IsSold == false)
                                   .Select(x => new ProductVM(x))
                                   .ToList();
 

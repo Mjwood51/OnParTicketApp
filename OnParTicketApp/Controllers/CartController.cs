@@ -246,7 +246,6 @@ namespace OnParTicketApp.Controllers
 
                 // Init OrderDetailsDTO
                 OrderDetailsDTO orderDetailsDTO = new OrderDetailsDTO();
-
                 // Add to OrderDetailsDTO
                 foreach (var item in cart)
                 {
@@ -254,7 +253,8 @@ namespace OnParTicketApp.Controllers
                     orderDetailsDTO.UserId = userId;
                     orderDetailsDTO.ProductId = item.ProductId;
                     orderDetailsDTO.Quantity = item.Quantity;
-
+                    ProductDTO prod = db.Products.Where(x => x.Id == orderDetailsDTO.ProductId).FirstOrDefault();
+                    prod.IsSold = true;
                     db.OrderDetails.Add(orderDetailsDTO);
 
                     db.SaveChanges();
