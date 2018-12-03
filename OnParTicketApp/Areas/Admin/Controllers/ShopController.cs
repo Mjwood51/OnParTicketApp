@@ -113,33 +113,20 @@ namespace OnParTicketApp.Areas.Admin.Controllers
         // GET:  Admin/Shop/DeleteCategory/id
         public ActionResult DeleteCategory(int id)
         {
+            string name = "";
             using (TicketAppDB db = new TicketAppDB())
             {
+                
                 //Get the page
                 CategoryDTO dto = db.Categories.Find(id);
-                List<ProductDTO> prod = db.Products.Where(x=>x.CategoryId == id).ToList();
-                if (prod != null)
-                {
-                    foreach (ProductDTO pr in prod)
-                    {
-                        if(db.OrderDetails.Any(x=>x.ProductId == pr.Id))
-                        { 
-                            OrderDetailsDTO dte = db.OrderDetails.Where(x => x.ProductId == pr.Id).FirstOrDefault();
-                            OrderDTO ord = db.Orders.Where(x => x.OrderId == dte.OrderId).FirstOrDefault();
-                            db.OrderDetails.Remove(dte);
-                            db.Orders.Remove(ord);
-                        }
-
-                        db.Products.Remove(pr);
-                    }
-                } 
+                name = dto.Name;
                 //Remove the category
                 db.Categories.Remove(dto);
 
                 //Save
                 db.SaveChanges();
             }
-            TempData["SM"] = "You have deleted a category!";
+            TempData["SM"] = "You have deleted category: '" + name + "'!";
 
             //Redirect
             return RedirectToAction("Categories");
