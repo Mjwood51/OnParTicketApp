@@ -1,0 +1,25 @@
+Run the app from the url link below. If you run from visual studio, it will throw an 
+error because your computer's IP address is not added to our azure database firewall
+permissions. The only downside is that the logos on the home page and the 'about us' 
+sections do not appear. If you wish to run the application from visual studio to see
+full features, send me an email with your computer's IP address and I can add it to 
+the firewall permissions. I'm sure you probably rather use this link instead.  
+Thank you for the great times this semester!  
+
+https://onparticketapp.azurewebsites.net
+
+Here are the lists of users and their passwords for testing:
+
+USERNAME           PASSWORD
+````````           `````````
+jcgaler             password
+MarkWoodard2227	    falcon16
+Admin               P@$$w0rd
+Silly               silly
+
+
+P.S. The app may run a bit slower through the link, you may need to wait more than a 
+few seconds for some pages.
+
+
+

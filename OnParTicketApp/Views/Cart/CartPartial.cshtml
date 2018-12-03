@@ -1,7 +1,10 @@
 ﻿@model OnParTicketApp.Models.ViewModels.Cart.CartVM
 
+@if (User.IsInRole("User"))
+{
 <div class="ajaxcart" style="color:white;">
     Your cart: @Model.Quantity item(s) - $@Model.Price
     <br />
     @Html.ActionLink("Checkout", "Index")
 </div>
+}
