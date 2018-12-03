@@ -48,30 +48,47 @@ namespace OnParTicketApp.Areas.Admin.Controllers
         {
             using (TicketAppDB db = new TicketAppDB())
             {
-                //Get products of user, remove those products
+                //Get products of user
                 List<ProductDTO> listings = db.Products.Where(x => x.UserId == id).ToList();
-                foreach(ProductDTO prod in listings)
+                List<OrderDetailsDTO> userDetails = db.OrderDetails.Where(x => x.UserId == id).ToList();
+                List<OrderDTO> orders = db.Orders.Where(x => x.UserId == id).ToList();
+                //Init List of prod details
+                foreach (ProductDTO prod in listings)
                 {
-                    db.Products.Remove(prod);
-                }
-
-                //Get orderdetails of user
-                List<OrderDetailsDTO> details = db.OrderDetails.Where(x => x.UserId == id).ToList();
-
-                //Get orders of user, remove orders and orderdetails, move any ordered products back as an available listing
-                if (details.Any())
-                {
-                    foreach (OrderDetailsDTO order in details)
+                    if(prod != null)
                     {
-                        OrderDTO anOrder = db.Orders.Where(x => x.OrderId == order.OrderId).FirstOrDefault();
-                        ProductDTO product = db.Products.Where(x => x.Id == order.ProductId).FirstOrDefault();
-                        product.IsSold = false;
-                        db.Orders.Remove(anOrder);
-                        db.OrderDetails.Remove(order);
+                        userDetails.Add(db.OrderDetails.Where(x => x.ProductId == prod.Id).FirstOrDefault());
+                        PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                        PhotoDTO photo = db.Photos.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                        db.Pdfs.Remove(pdf);
+                        db.Photos.Remove(photo);
                     }
                 }
 
-                //Get user and remove the user
+                foreach(OrderDetailsDTO det in userDetails)
+                {
+                    if(det != null)
+                    {
+                        orders.Add(db.Orders.Where(x => x.OrderId == det.OrderId).FirstOrDefault());
+                        foreach (OrderDTO or in orders)
+                        {
+                            if (or != null)
+                            {
+                                db.Orders.Remove(or);
+                            }
+                        }
+                        db.OrderDetails.Remove(det);
+                    }
+                }
+
+                foreach (ProductDTO prod in listings)
+                {
+                        if (prod != null)
+                        {
+                            db.Products.Remove(prod);
+                        }
+                }     
+               
                 UserDTO user = db.Users.Where(x => x.Id == id).FirstOrDefault();
                 string u = user.Username;
                 db.Users.Remove(user);
