@@ -60,8 +60,11 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                         userDetails.Add(db.OrderDetails.Where(x => x.ProductId == prod.Id).FirstOrDefault());
                         PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == prod.Id).FirstOrDefault();
                         PhotoDTO photo = db.Photos.Where(x => x.ProductId == prod.Id).FirstOrDefault();
-                        db.Pdfs.Remove(pdf);
-                        db.Photos.Remove(photo);
+                        if (pdf != null)
+                        {
+                            db.Pdfs.Remove(pdf);
+                            db.Photos.Remove(photo);
+                        }
                     }
                 }
 
