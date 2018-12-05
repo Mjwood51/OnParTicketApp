@@ -67,21 +67,31 @@ namespace OnParTicketApp.Controllers
 
                 List<ProductDTO> prodList = db.Products.ToList();
 
-
-                foreach(ProductDTO prod in prodList)
+                OrderDTO order = new OrderDTO();
+                if (prodList != null)
                 {
-                    if(prod.ReservationDate < DateTime.Now.Date.AddDays(-1))
+                    foreach (ProductDTO prod in prodList)
                     {
-                        OrderDetailsDTO detail = db.OrderDetails.Where(x => x.ProductId == prod.Id).FirstOrDefault();
-                        OrderDTO ordering = db.Orders.Where(x => x.OrderId == detail.OrderId).FirstOrDefault();
-                        PhotoDTO photo = db.Photos.Where(x => x.ProductId == prod.Id).FirstOrDefault();
-                        PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == prod.Id).FirstOrDefault();
-                        db.Pdfs.Remove(pdf);
-                        db.Photos.Remove(photo);
-                        db.Orders.Remove(ordering);
-                        db.OrderDetails.Remove(detail);
-                        db.Products.Remove(prod);
-                        db.SaveChanges();
+                        if (prod.ReservationDate < DateTime.Now.Date.AddDays(-1))
+                        {
+                            OrderDetailsDTO detail = db.OrderDetails.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                            if (detail != null)
+                            {
+                                order = db.Orders.Where(x => x.OrderId == detail.OrderId).FirstOrDefault();
+                                db.Orders.Remove(order);
+                                db.OrderDetails.Remove(detail);
+                            }
+                            PhotoDTO photo = db.Photos.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                            PdfDTO pdf = db.Pdfs.Where(x => x.ProductId == prod.Id).FirstOrDefault();
+                            if (photo != null)
+                            {
+                                db.Pdfs.Remove(pdf);
+                                db.Photos.Remove(photo);
+                            }
+
+                            db.Products.Remove(prod);
+                            db.SaveChanges();
+                        }
                     }
                 }
                
