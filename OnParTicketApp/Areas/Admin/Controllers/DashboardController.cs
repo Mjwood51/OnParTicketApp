@@ -48,7 +48,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
         {
             using (TicketAppDB db = new TicketAppDB())
             {
-                //Get products of user
+                //Get products, orders and details of user
                 List<ProductDTO> listings = db.Products.Where(x => x.UserId == id).ToList();
                 List<OrderDetailsDTO> userDetails = db.OrderDetails.Where(x => x.UserId == id).ToList();
                 List<OrderDTO> orders = db.Orders.Where(x => x.UserId == id).ToList();
@@ -65,6 +65,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                             db.Pdfs.Remove(pdf);
                             db.Photos.Remove(photo);
                         }
+                        db.Products.Remove(prod);
                     }
                 }
 
@@ -84,13 +85,7 @@ namespace OnParTicketApp.Areas.Admin.Controllers
                     }
                 }
 
-                foreach (ProductDTO prod in listings)
-                {
-                        if (prod != null)
-                        {
-                            db.Products.Remove(prod);
-                        }
-                }     
+  
                
                 UserDTO user = db.Users.Where(x => x.Id == id).FirstOrDefault();
                 string u = user.Username;
