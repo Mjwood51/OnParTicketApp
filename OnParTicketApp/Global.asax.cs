@@ -21,6 +21,22 @@ namespace OnParTicketApp
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 
+        protected void Application_BeginRequest()
+        {
+            var loadbalancerReceivedSslRequest = string.Equals(Request.Headers["X-Forwarded-Proto"], "https");
+            var serverReceivedSslRequest = Request.IsSecureConnection;
+
+            if (loadbalancerReceivedSslRequest || serverReceivedSslRequest) return;
+
+            UriBuilder uri = new UriBuilder(Context.Request.Url);
+            if (!uri.Host.Equals("localhost"))
+            {
+                uri.Port = 443;
+                uri.Scheme = "https";
+                Response.Redirect(uri.ToString());
+            }
+        }
+
         public class IPrincipalModelBinder : IModelBinder
         {
             public object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)

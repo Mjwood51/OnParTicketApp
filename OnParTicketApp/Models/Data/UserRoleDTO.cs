@@ -7,7 +7,6 @@ using System.Web;
 
 namespace OnParTicketApp.Models.Data
 {
-    [Table("tblUserRoles")]
     public class UserRoleDTO
     {
         [Key, Column(Order = 0)]

@@ -7,7 +7,6 @@ using System.Web;
 
 namespace OnParTicketApp.Models.Data
 {
-    [Table("tblPdf")]
     public class PdfDTO
     {
         [Key]

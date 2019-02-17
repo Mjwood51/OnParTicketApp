@@ -13,7 +13,6 @@ namespace OnParTicketApp.Models.Data
         Verified = 1
     }
 
-    [Table("tblProducts")]
     public class ProductDTO
     {
         [Key]
